@@ -1,14 +1,10 @@
 //import Login from './backup/login';
 //import WelcomePage from './welcomePage';
 
-import welcomePage from './welcome/page';
-
-import Login from './login/page';
-
 export default function Home() {
   return (
-    <div>
-      <Login />
-    </div>
+    <main className="p-4">
+      <h1>Home Page</h1>
+    </main>
   );
 }
