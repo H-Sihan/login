@@ -1,55 +1,101 @@
-'use client';
+'use client'
+import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import { UserAuth } from "../auth/AuthContext";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+const page = () => {
 
-export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const { user, googleSignIn, logOut } = UserAuth();
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Reset the error message
-    setError('');
-
-    // Check if the username and password match the provided values
-    if (username === 'sih' && password === '123') {
-      // Navigate to the welcome page
-      router.push('/welcome');
-    } else {
-      // Set an error message
-      setError('Invalid username or password');
+  const handleSignIn = async () => {
+    try {
+      await googleSignIn();
+    } catch (error) {
+      console.log(error)
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await logOut()
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      setLoading(false);
+    };
+    checkAuthentication();
+  }, [user]);
+
+  console.log(user)
+
   return (
-    <div>
-      <h1>Login</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">Username:</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="submit">Login</button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="p-4 max-w-md mx-auto bg-white rounded-lg shadow-md">
+        <h2 className="mb-4 text-xl font-semibold text-center text-gray-800">Login</h2>
+        {loading ? (
+          <p>Loading...</p>
+        ) : user ? (
+          <div className="flex items-center justify-center space-x-4">
+            <p className="text-gray-800 font-semibold">Welcome, {user.displayName}</p>
+            <p
+              onClick={handleSignOut}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-300 cursor-pointer"
+            >
+              Sign Out
+            </p>
+          </div>
+        ) : (
+          <div>
+            <div className="flex justify-center mb-4">
+              <button onClick={handleSignIn} className="px-4 py-2 mr-2 text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors duration-300">
+                Sign in with Google
+              </button>
+              <button className="px-4 py-2 text-white bg-black rounded-md hover:bg-gray-800 transition-colors duration-300">
+                Sign in with Apple
+              </button>
+            </div>
+            <p className="text-center text-gray-600 mb-4">or</p>
+            <form>
+              <div className="mb-4">
+                <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
+                  Email:
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  className="w-full px-3 py-2 leading-tight text-gray-700 border rounded-md shadow-sm appearance-none focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div className="mb-6">
+                <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
+                  Password:
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  className="w-full px-3 py-2 leading-tight text-gray-700 border rounded-md shadow-sm appearance-none focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2 px-4 text-white bg-indigo-600 hover:bg-indigo-700 rounded-md focus:outline-none focus:shadow-outline"
+              >
+                Login
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+export default page;

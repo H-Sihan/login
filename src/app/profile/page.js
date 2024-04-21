@@ -2,7 +2,6 @@
 import React, {useEffect, useState} from "react";
 import { UserAuth } from "../auth/AuthContext";
 
-
 const page = () => {
     const {user} =UserAuth();
     const [loading, setLoading] = useState(true);
