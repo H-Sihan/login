@@ -1,9 +1,11 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import { UserAuth } from "../auth/AuthContext";
+import { db } from "../firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
 
 const page = () => {
-    const { user, logOut, googleSignIn } = UserAuth();
+    const { user, logOut, googleSignIn, createUser } = UserAuth();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,6 +29,35 @@ const page = () => {
             await logOut()
         } catch (error) {
             console.log(error)
+        }
+    };
+
+    const handleSignUp = async (e) => {
+        e.preventDefault();
+    
+        const firstName = e.target.firstName.value;
+        const username = e.target.username.value;
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+    
+        try {
+            // Create a new user with email and password
+            const userCredential = await createUser(email, password);
+            const user = userCredential.user;
+    
+            // Store additional user data in Firestore
+            const usersCollectionRef = collection(db, "users");
+            await addDoc(usersCollectionRef, {
+                userId: user.uid,
+                firstName: firstName,
+                username: username, // Storing username in Firestore
+                email: email,
+                createdAt: new Date(),
+            });
+    
+            console.log("User signed up successfully");
+        } catch (error) {
+            console.error("Error signing up:", error);
         }
     };
 
@@ -57,14 +88,27 @@ const page = () => {
                             </button>
                         </div>
                         <p className="text-center text-gray-600 mb-6">or</p>
-                        <form>
+                        <form onSubmit={handleSignUp}>
                             <div className="mb-4">
                                 <label htmlFor="username" className="block mb-2 text-sm font-medium text-gray-700">
-                                    First Name:
+                                    Username:
                                 </label>
                                 <input
                                     type="text"
                                     id="username"
+                                    name="username" // Added name attribute
+                                    className="w-full px-3 py-2 leading-tight text-gray-700 border rounded-md shadow-sm appearance-none focus:outline-none focus:shadow-outline"
+                                    required="required"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="firstName" className="block mb-2 text-sm font-medium text-gray-700">
+                                    First Name:
+                                </label>
+                                <input
+                                    type="text"
+                                    id="firstName"
+                                    name="firstName" // Added name attribute
                                     className="w-full px-3 py-2 leading-tight text-gray-700 border rounded-md shadow-sm appearance-none focus:outline-none focus:shadow-outline"
                                     required="required"
                                 />

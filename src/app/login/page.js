@@ -1,18 +1,35 @@
 'use client'
-import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { UserAuth } from "../auth/AuthContext";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const page = () => {
 
-  const { user, googleSignIn, logOut } = UserAuth();
+  const { user, googleSignIn, signIn, logOut } = UserAuth();
   const [loading, setLoading] = useState(true);
+  /* const [firstName, setFirstName] = useState("");
+  const [username, setUsername] = useState(""); */
 
   const handleSignIn = async () => {
     try {
       await googleSignIn();
     } catch (error) {
       console.log(error)
+    }
+  };
+
+  const handleEmailSignIn = async (e) => {
+    e.preventDefault();
+  
+    const email = e.target.elements.email.value;
+    const password = e.target.elements.password.value;
+  
+    try {
+      await signIn(email, password);
+      console.log("User logged in successfully");
+    } catch (error) {
+      console.error("Error logging in:", error);
     }
   };
 
@@ -32,6 +49,29 @@ const page = () => {
     checkAuthentication();
   }, [user]);
 
+  /* useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnapshot = await getDoc(userDocRef);
+          if (userDocSnapshot.exists()) {
+            const userData = userDocSnapshot.data();
+            setFirstName(userData.firstName);
+            setUsername(userData.username);
+          } else {
+            console.log("User document not found in Firestore");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    fetchUserData(); // Call fetchUserData when user changes
+  }, [user]); */
+
+
   console.log(user)
 
   return (
@@ -42,7 +82,7 @@ const page = () => {
           <p>Loading...</p>
         ) : user ? (
           <div className="flex items-center justify-center space-x-4">
-            <p className="text-gray-800 font-semibold">Welcome, {user.displayName}</p>
+            <p className="text-gray-800 font-semibold">Welcome, {user.displayName || user.email}</p>
             <p
               onClick={handleSignOut}
               className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-300 cursor-pointer"
@@ -61,7 +101,7 @@ const page = () => {
               </button>
             </div>
             <p className="text-center text-gray-600 mb-4">or</p>
-            <form>
+            <form onSubmit={handleEmailSignIn}>
               <div className="mb-4">
                 <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
                   Email:
@@ -69,6 +109,7 @@ const page = () => {
                 <input
                   type="email"
                   id="email"
+                  name="email"
                   className="w-full px-3 py-2 leading-tight text-gray-700 border rounded-md shadow-sm appearance-none focus:outline-none focus:shadow-outline"
                   required
                 />
@@ -80,6 +121,7 @@ const page = () => {
                 <input
                   type="password"
                   id="password"
+                  name="password"
                   className="w-full px-3 py-2 leading-tight text-gray-700 border rounded-md shadow-sm appearance-none focus:outline-none focus:shadow-outline"
                   required
                 />
